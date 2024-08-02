@@ -1,17 +1,15 @@
 {
   "name": "token",
   "version": "1.0.0",
+  "description": "Server to generate Agora tokens",
   "main": "server.js",
   "scripts": {
-   "start": "node server.js",
-   "build": "echo 'No build step required'"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "agora-access-token": "^2.0.4",
-    "express": "^4.19.2"
+    "express": "^4.17.1",
+    "cors": "^2.8.5",
+    "axios": "^0.21.1",
+    "agora-access-token": "^2.0.0"
   }
 }

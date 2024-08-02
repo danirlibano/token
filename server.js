@@ -1,36 +1,33 @@
 const express = require('express');
 const { RtcTokenBuilder, RtcRole } = require('agora-access-token');
+const cors = require('cors');
+const axios = require('axios');
 
 const app = express();
 
-// Middleware to parse JSON requests
-app.use(express.json());
+app.use(cors({
+  origin: 'https://vdot-pt.web.app',
+  methods: 'POST',
+  allowedHeaders: ['Content-Type']
+}));
 
-// Generate RTC token
-app.post('/api/generate-token', (req, res) => {
-  console.log('Received request body:', req.body);  // Log request body
+app.use(express.json());  // Ensure that the body is parsed as JSON
 
+// Proxy endpoint to call the external token generation API
+app.post('/api/proxy-generate-token', async (req, res) => {
   const { channelName, certificate, appId } = req.body;
-  if (!channelName) {
-    return res.status(400).json({ error: 'Channel name is required' });
+  try {
+    const response = await axios.post('https://token-neon.vercel.app/api/generate-token', {
+      channelName,
+      certificate,
+      appId
+    });
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Error generating token' });
   }
-
-  const uid = req.body.uid || 0; // Use 0 for the default UID
-  const role = RtcRole.PUBLISHER;
-  const expirationTimeInSeconds = 3600;
-  const currentTimestamp = Math.floor(Date.now() / 1000);
-  const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
-
-  const token = RtcTokenBuilder.buildTokenWithUid(
-    appId,
-    certificate,
-    channelName,
-    uid,
-    role,
-    privilegeExpiredTs
-  );
-
-  res.json({ token });
 });
 
-module.exports = app;  // Export the app for use in vercel.json
+app.listen(process.env.PORT || 3000, () => {
+  console.log('Server is running on port', process.env.PORT || 3000);
+});
